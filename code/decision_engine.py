@@ -245,8 +245,11 @@ class DecisionEngine:
             if desc in seen_descs:
                 continue
 
-            can_stop = (cat in stop_cats) and (flex in {'stoppable', 'reducible_or_stoppable'})
-            can_reduce = (cat in reduce_cats) and (flex in {'reducible', 'reducible_or_stoppable'}) and (e.get('minimum_allowed_amount') is not None)
+            if flex != 'flexible':
+                continue
+
+            can_stop = (cat in stop_cats)
+            can_reduce = (cat in reduce_cats) and (e.get('minimum_allowed_amount') is not None)
 
             if can_stop or can_reduce:
                 seen_descs.add(desc)

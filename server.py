@@ -124,14 +124,25 @@ def get_bootstrap():
         df_out = pd.read_csv(OUTPUT_CSV_PATH).fillna("")
         out_records = df_out.to_dict(orient="records")
     
+    currency_symbols = {"INR": "₹", "ZAR": "R", "IDR": "Rp", "USD": "$", "EUR": "€"}
     reqs = []
     for r in loader.requests:
         rc = dict(r)
         rc["is_sample"] = False
+        uid = rc.get("user_id", "")
+        prof = loader.profiles.get(uid, {})
+        curr = prof.get("home_currency", "INR")
+        rc["home_currency"] = curr
+        rc["currency_symbol"] = currency_symbols.get(curr, curr)
         reqs.append(rc)
     for s in loader.samples:
         sc = dict(s)
         sc["is_sample"] = True
+        uid = sc.get("user_id", "")
+        prof = loader.profiles.get(uid, {})
+        curr = prof.get("home_currency", "INR")
+        sc["home_currency"] = curr
+        sc["currency_symbol"] = currency_symbols.get(curr, curr)
         reqs.append(sc)
 
     profiles_list = []
@@ -483,18 +494,27 @@ HTML_CONTENT = """<!DOCTYPE html>
     --blue-bg:#eef1ff;
   }
   *{box-sizing:border-box;}
+  html{
+    background:var(--bg);
+    margin:0;
+    padding:0;
+    width:100%;
+    height:100%;
+  }
   body{
     margin:0;
+    padding:0;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
-    background:#000;
+    background:var(--bg);
     color:var(--text);
+    width:100%;
+    min-height:100vh;
   }
   .frame{
-    max-width:1400px;
-    margin:0 auto;
+    width:100%;
+    min-height:100vh;
     background:var(--bg);
     display:flex;
-    min-height:100vh;
     position:relative;
   }
 
@@ -614,7 +634,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     font-size:12.5px;color:#4c4f78;font-style:italic;max-width:220px;margin-top:10px;
   }
 
-  .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:start;}
+  .grid{display:grid;grid-template-columns:2fr 1fr;gap:18px;align-items:stretch;}
   .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:20px;}
   .ask-card h2{margin:0 0 4px;font-size:16px;}
   .ask-card p{margin:0 0 14px;font-size:13px;color:var(--muted);}
@@ -719,7 +739,7 @@ HTML_CONTENT = """<!DOCTYPE html>
   .btn-light:hover{background:#f8f8fc;}
 
   /* Right column */
-  .why-card{background:#f0fdf5;border:1px solid #dcf6e4;}
+  .why-card{background:#f0fdf5;border:1px solid #dcf6e4;height:100%;display:flex;flex-direction:column;box-sizing:border-box;}
   .why-head{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
   .why-head .bulb{
     width:26px;height:26px;border-radius:50%;background:#fde68a;display:flex;align-items:center;justify-content:center;font-size:13px;
@@ -728,15 +748,19 @@ HTML_CONTENT = """<!DOCTYPE html>
   .why-card p{margin:0 0 16px;font-size:12.5px;color:#4b5b4f;line-height:1.5;}
   .safety-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
   .safety-head span.tag{
-    background:#eafcef;color:var(--green);font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;
+    font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;
   }
+  .safety-head span.tag.passed{background:#eafcef;color:var(--green);}
+  .safety-head span.tag.warning{background:#fef3c7;color:#b45309;}
   .safety-head b{font-size:13.5px;}
   .check-list{display:flex;flex-direction:column;gap:12px;}
   .check-item{display:flex;gap:10px;align-items:flex-start;}
   .check-item .tick{
-    width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;font-size:11px;
+    width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;
     display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;
   }
+  .check-item .tick.passed{background:var(--green);}
+  .check-item .tick.failed{background:#ef4444;}
   .check-item .t{font-size:13px;font-weight:600;}
   .check-item .d{font-size:11.5px;color:var(--muted);}
 
@@ -986,24 +1010,24 @@ HTML_CONTENT = """<!DOCTYPE html>
         <div>
           <div class="card why-card">
             <div class="why-head"><div class="bulb">💡</div><h3>Why this decision?</h3></div>
-            <p id="why-explanation">You cannot safely pay ₹80,000 today while maintaining your minimum balance. However, your projected cash flow supports completing the purchase through the recommended payment plan while keeping your essential expenses covered.</p>
+            <p id="why-explanation">Do not proceed with the ₹80,000 request. Although ₹40,711.67 is available today, the full amount cannot be completed safely within 90 days.</p>
 
             <div class="safety-head">
               <b>Safety checks</b>
-              <span class="tag" id="safety-overall-tag">All checks passed</span>
+              <span class="tag warning" id="safety-overall-tag">1 of 3 checks passed</span>
             </div>
             <div class="check-list">
               <div class="check-item">
-                <div class="tick" id="check-icon-1">✓</div>
-                <div><div class="t">Essential expenses protected</div><div class="d">Your necessary expenses remain covered.</div></div>
+                <div class="tick failed" id="check-icon-1">✕</div>
+                <div><div class="t">Essential expenses protected</div><div class="d" id="check-desc-1">Protected expenses are at risk during the forecast period.</div></div>
               </div>
               <div class="check-item">
-                <div class="tick" id="check-icon-2">✓</div>
-                <div><div class="t">Minimum balance maintained</div><div class="d" id="check-desc-floor">You maintain the required minimum balance.</div></div>
+                <div class="tick passed" id="check-icon-2">✓</div>
+                <div><div class="t">Minimum balance maintained</div><div class="d" id="check-desc-floor">Floor of ₹18,000 maintained (Lowest: ₹120,230.57).</div></div>
               </div>
               <div class="check-item">
-                <div class="tick" id="check-icon-3">✓</div>
-                <div><div class="t">Full payment plan achievable</div><div class="d">Your projected cash flow supports the complete plan.</div></div>
+                <div class="tick failed" id="check-icon-3">✕</div>
+                <div><div class="t">Full payment plan achievable</div><div class="d" id="check-desc-3">Cash flow does not support completing the full plan within 90 days.</div></div>
               </div>
             </div>
           </div>
@@ -1025,14 +1049,22 @@ HTML_CONTENT = """<!DOCTYPE html>
     <!-- PANE: REQUESTS -->
     <div id="pane-requests" class="tab-pane">
       <div class="card">
-        <h2>Dataset Requests</h2>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+          <h2 style="margin:0;">Dataset Requests</h2>
+          <div style="font-size:13px;color:var(--muted);" id="req-pagination-info">Showing 1-25 of 250 requests</div>
+        </div>
         <div class="table-container">
           <table class="data-table">
             <thead>
-              <tr><th>Request ID</th><th>User ID</th><th>Category</th><th>Amount</th><th>Status</th><th>Action</th></tr>
+              <tr><th>Request ID</th><th>User ID</th><th>Request Type</th><th>Amount</th><th>Status</th><th>Action</th></tr>
             </thead>
             <tbody id="requests-table-body"></tbody>
           </table>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px;flex-wrap:wrap;gap:10px;">
+          <button class="btn btn-light" id="btn-prev-page" onclick="changeReqPage(-1)">← Previous</button>
+          <span style="font-size:13px;font-weight:600;" id="req-page-num">Page 1 of 10</span>
+          <button class="btn btn-light" id="btn-next-page" onclick="changeReqPage(1)">Next →</button>
         </div>
       </div>
     </div>
@@ -1299,13 +1331,57 @@ function updateDecisionCard(pred, sim) {
 }
 
 function updateWhyPanel(pred, safety) {
-  document.getElementById("why-explanation").innerText = pred.decision_explanation;
+  let explanation = pred.decision_explanation || "";
+  ["ZAR", "EUR", "USD", "IDR", "INR"].forEach(c => {
+    explanation = explanation.replaceAll(c, "₹");
+  });
+  document.getElementById("why-explanation").innerText = explanation;
 
-  document.getElementById("check-icon-1").innerText = safety.essential_expenses_protected ? "✓" : "⚠️";
-  document.getElementById("check-icon-2").innerText = safety.minimum_balance_maintained ? "✓" : "✕";
-  document.getElementById("check-icon-3").innerText = safety.full_payment_achievable ? "✓" : "✕";
+  const checks = [
+    { id: "check-icon-1", pass: !!safety.essential_expenses_protected },
+    { id: "check-icon-2", pass: !!safety.minimum_balance_maintained },
+    { id: "check-icon-3", pass: !!safety.full_payment_achievable }
+  ];
 
-  document.getElementById("check-desc-floor").innerText = `Floor of ₹${safety.minimum_floor.toLocaleString()} maintained (Lowest: ₹${safety.lowest_projected_balance.toLocaleString()}).`;
+  let passedCount = 0;
+  checks.forEach(c => {
+    const el = document.getElementById(c.id);
+    if (c.pass) {
+      passedCount++;
+      el.innerText = "✓";
+      el.className = "tick passed";
+    } else {
+      el.innerText = "✕";
+      el.className = "tick failed";
+    }
+  });
+
+  const tagEl = document.getElementById("safety-overall-tag");
+  if (passedCount === checks.length) {
+    tagEl.innerText = "All checks passed";
+    tagEl.className = "tag passed";
+  } else {
+    tagEl.innerText = `${passedCount} of ${checks.length} checks passed`;
+    tagEl.className = "tag warning";
+  }
+
+  const desc1 = document.getElementById("check-desc-1");
+  if (desc1) {
+    desc1.innerText = safety.essential_expenses_protected 
+      ? "Your necessary expenses remain covered." 
+      : "Protected expenses are at risk during the forecast period.";
+  }
+
+  const desc3 = document.getElementById("check-desc-3");
+  if (desc3) {
+    desc3.innerText = safety.full_payment_achievable 
+      ? "Your projected cash flow supports the complete plan." 
+      : "Cash flow does not support completing the full plan within 90 days.";
+  }
+
+  document.getElementById("check-desc-floor").innerText = safety.minimum_balance_maintained
+    ? `Floor of ₹${safety.minimum_floor.toLocaleString()} maintained (Lowest: ₹${safety.lowest_projected_balance.toLocaleString()}).`
+    : `Balance drops to ₹${safety.lowest_projected_balance.toLocaleString()}, breaching the ₹${safety.minimum_floor.toLocaleString()} floor.`;
 }
 
 function openEditFinances() {
@@ -1426,21 +1502,65 @@ function renderOverviewChart() {
 
 function renderOverviewTable() {}
 
+let currentReqPage = 1;
+const reqPageSize = 25;
+
+function changeReqPage(delta) {
+  if (!bootstrapData || !bootstrapData.requests) return;
+  const totalPages = Math.ceil(bootstrapData.requests.length / reqPageSize);
+  currentReqPage = Math.max(1, Math.min(totalPages, currentReqPage + delta));
+  renderRequestsTable();
+}
+
 function renderRequestsTable() {
   const tbody = document.getElementById("requests-table-body");
-  if (!tbody || !bootstrapData) return;
+  if (!tbody || !bootstrapData || !bootstrapData.requests) return;
   tbody.innerHTML = "";
-  bootstrapData.requests.slice(0, 15).forEach(r => {
+
+  const allReqs = bootstrapData.requests;
+  const total = allReqs.length;
+  const totalPages = Math.ceil(total / reqPageSize) || 1;
+  currentReqPage = Math.max(1, Math.min(totalPages, currentReqPage));
+
+  const startIdx = (currentReqPage - 1) * reqPageSize;
+  const endIdx = Math.min(total, startIdx + reqPageSize);
+  const pageItems = allReqs.slice(startIdx, endIdx);
+
+  const pageInfoEl = document.getElementById("req-pagination-info");
+  if (pageInfoEl) pageInfoEl.innerText = `Showing ${total > 0 ? startIdx + 1 : 0}-${endIdx} of ${total} requests`;
+
+  const pageNumEl = document.getElementById("req-page-num");
+  if (pageNumEl) pageNumEl.innerText = `Page ${currentReqPage} of ${totalPages}`;
+
+  const prevBtn = document.getElementById("btn-prev-page");
+  if (prevBtn) prevBtn.disabled = currentReqPage <= 1;
+
+  const nextBtn = document.getElementById("btn-next-page");
+  if (nextBtn) nextBtn.disabled = currentReqPage >= totalPages;
+
+  pageItems.forEach(r => {
     const tr = document.createElement("tr");
-    tr.innerHTML = `<td><b>${r.request_id}</b></td><td>${r.user_id}</td><td>${r.category}</td><td>₹${r.requested_amount}</td><td>Evaluated</td><td><button class="edit-btn" onclick="selectReq('${r.request_id}', ${r.requested_amount})">Inspect</button></td>`;
+    const categoryName = r.request_type || r.category || "N/A";
+    const symbol = r.currency_symbol || "₹";
+    const amtStr = `${symbol}${floatVal(r.requested_amount).toLocaleString()}`;
+
+    tr.innerHTML = `
+      <td><b>${r.request_id}</b></td>
+      <td>${r.user_id}</td>
+      <td><span style="text-transform:capitalize;">${categoryName.replace(/_/g, " ")}</span></td>
+      <td><b>${amtStr}</b></td>
+      <td><span class="tag passed">Evaluated</span></td>
+      <td><button class="edit-btn" onclick="selectReq('${r.request_id}', ${r.requested_amount}, '${symbol}')">Inspect</button></td>
+    `;
     tbody.appendChild(tr);
   });
 }
 
-function selectReq(reqId, amt) {
+function selectReq(reqId, amt, symbol) {
   switchNav("ask-agent");
   currentAmount = amt;
-  document.getElementById("purchase-input").value = `Evaluating ${reqId} for ₹${amt}`;
+  const sym = symbol || "₹";
+  document.getElementById("purchase-input").value = `Evaluating ${reqId} for ${sym}${amt.toLocaleString()}`;
   runAnalysis();
 }
 
