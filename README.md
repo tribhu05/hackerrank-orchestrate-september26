@@ -38,7 +38,38 @@ Your solution must:
 Run the starter Python entry point with:
 
 ```bash
-python3 code/main.py
+python code/main.py
+```
+
+### Running on Localhost (Interactive Web UI)
+
+Launch the interactive Streamlit dashboard on localhost:
+
+```bash
+streamlit run app.py --server.port 8501
+```
+
+Once started, navigate in your browser to:
+**http://localhost:8501**
+
+Features:
+- **Executive Dashboard**: KPI metrics, status breakdowns, payment method distributions.
+- **Request Inspector**: Interactive request selector, full user profile, decision results, and 90-day balance trajectory line chart.
+- **What-If Scenario Sandbox**: Test custom profiles, balances, amounts, and live recalculations.
+- **Output Dataset & Export**: Filterable table of all 250 predictions and instant CSV download.
+
+### Running Automated Tests & Evaluation Suite
+
+Run the full pytest suite:
+
+```bash
+pytest tests/ -v
+```
+
+Audit output schema and validate against sample requests:
+
+```bash
+python code/evaluation/main.py
 ```
 
 After running your solution, confirm that `output.csv` exists in the repository root and contains the required columns and one row for every request.
