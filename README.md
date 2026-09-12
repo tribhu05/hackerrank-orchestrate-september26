@@ -1,4 +1,4 @@
-# 💎 Buy or Wait? — Autonomous AI Financial Decision Agent
+# Buy or Wait? — Autonomous AI Financial Decision Agent
 
 [![HackerRank Orchestrate 2026](https://img.shields.io/badge/HackerRank-Orchestrate%2024h-green.svg)](https://www.hackerrank.com/contests/hackerrank-orchestrate-september26/challenges/buy-or-wait)
 [![Python 3.10+](https://img.shields.io/badge/python-3.10%2B-blue.svg)](https://www.python.org/)
@@ -11,7 +11,7 @@
 
 ---
 
-## 📌 Table of Contents
+##  Table of Contents
 
 - [Executive Summary & Problem Overview](#-executive-summary--problem-overview)
 - [Architecture & Engine Design](#-architecture--engine-design)
@@ -27,7 +27,7 @@
 
 ---
 
-## 🎯 Executive Summary & Problem Overview
+##  Executive Summary & Problem Overview
 
 When a user asks **"Can I afford to buy this laptop today?"**, answering accurately requires far more than checking their current bank balance. 
 
@@ -40,7 +40,7 @@ The **Buy or Wait?** agent reconstructs a complete multi-currency financial bala
 
 ---
 
-## 🏗️ Architecture & Engine Design
+## Architecture & Engine Design
 
 The solution relies on a **Hybrid Deterministic-AI Architecture**:
 
@@ -79,7 +79,7 @@ The solution relies on a **Hybrid Deterministic-AI Architecture**:
 
 ---
 
-## ✨ Key Features & Capabilities
+##  Key Features & Capabilities
 
 - ⚡ **Lightning Fast Performance**: Evaluates all 250 requests with full 90-day daily balance trajectories in **~3.5 seconds**.
 - 🌐 **Multi-Currency FX Support**: Native handling of INR (`₹`), USD (`$`), EUR (`€`), ZAR (`R`), and IDR (`Rp`) using dated exchange rate matrices.
@@ -89,7 +89,7 @@ The solution relies on a **Hybrid Deterministic-AI Architecture**:
 
 ---
 
-## 💻 System Requirements & Installation
+##  System Requirements & Installation
 
 ### Prerequisites
 - **Python**: Version `3.10` or higher
@@ -162,7 +162,7 @@ pytest tests
 
 ---
 
-## 🎨 Interactive Cockpit Web Dashboard
+##  Interactive Cockpit Web Dashboard
 
 Launch the FastAPI web cockpit locally to visually inspect requests, explore safety checks, and test custom scenarios:
 
