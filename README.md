@@ -260,16 +260,4 @@ hackerrank-orchestrate-september26/
 ```
 
 ---
-
-## 🏆 Official Contest Links & Submission
-
-- **Contest**: HackerRank Orchestrate (September 2026)
-- **Challenge**: Buy or Wait?
-- **Mandatory Submission Link**:  
-  👉 [https://www.hackerrank.com/contests/hackerrank-orchestrate-september26/challenges/buy-or-wait/submission](https://www.hackerrank.com/contests/hackerrank-orchestrate-september26/challenges/buy-or-wait/submission)
-
----
-
-## 📄 License
-
-Distributed under the MIT License. See `LICENSE` for details.
+ENSE` for details.
