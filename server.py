@@ -464,8 +464,8 @@ HTML_CONTENT = """<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Buy or Wait?</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Buy or Wait? — Responsive AI Financial Agent</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
   :root{
@@ -495,7 +495,46 @@ HTML_CONTENT = """<!DOCTYPE html>
     background:var(--bg);
     display:flex;
     min-height:100vh;
+    position:relative;
   }
+
+  /* Mobile Header Bar */
+  .mobile-header {
+    display: none;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    padding: 12px 16px;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .mobile-brand {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+  }
+  .mobile-brand .ico {
+    width: 28px; height: 28px; border-radius: 7px;
+    background: linear-gradient(135deg,#7c6cf6,#4338ca);
+    color: #fff; display: flex; align-items: center; justify-content: center; font-size: 13px;
+  }
+  .menu-toggle {
+    background: #fff; border: 1px solid var(--border); border-radius: 8px;
+    padding: 6px 10px; font-size: 18px; cursor: pointer; color: var(--text);
+  }
+
+  /* Overlay Backdrop for Mobile Sidebar */
+  .sidebar-backdrop {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+    background: rgba(0,0,0,0.4); backdrop-filter: blur(2px); z-index: 200;
+  }
+  .sidebar-backdrop.active { display: block; }
+
   /* Sidebar */
   .sidebar{
     width:230px;
@@ -503,6 +542,7 @@ HTML_CONTENT = """<!DOCTYPE html>
     border-right:1px solid var(--border);
     padding:20px 16px;
     flex-shrink:0;
+    transition: transform 0.25s ease;
   }
   .brand{
     display:flex;
@@ -544,6 +584,7 @@ HTML_CONTENT = """<!DOCTYPE html>
   .main{flex:1;padding:22px 30px;min-width:0;}
   .topbar{
     display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;
+    flex-wrap: wrap; gap: 14px;
   }
   .greeting p{margin:0;font-size:13px;color:var(--muted);}
   .greeting h1{margin:4px 0 4px;font-size:23px;}
@@ -580,10 +621,10 @@ HTML_CONTENT = """<!DOCTYPE html>
   .input-row{
     display:flex;align-items:center;gap:10px;
     border:1px solid var(--border);border-radius:12px;padding:6px 6px 6px 16px;
-    margin-bottom:14px;
+    margin-bottom:14px; flex-wrap: wrap;
   }
   .input-row input{
-    flex:1;border:none;outline:none;font-size:13.5px;padding:10px 0;color:var(--text);
+    flex:1;border:none;outline:none;font-size:13.5px;padding:10px 0;color:var(--text); min-width: 180px;
   }
   .input-row input::placeholder{color:#a4a6b8;}
   .img-btn{
@@ -604,7 +645,7 @@ HTML_CONTENT = """<!DOCTYPE html>
   .chip.active{background:var(--blue-bg);color:var(--indigo);font-weight:600;}
   .chip:hover:not(.active){background:#eeeef5;}
 
-  .finances-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .finances-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px; flex-wrap: wrap; gap: 8px;}
   .finances-head h3{margin:0;font-size:15px;}
   .finances-head span{font-size:12px;color:var(--muted);font-weight:400;margin-left:6px;}
   .edit-btn{
@@ -667,14 +708,14 @@ HTML_CONTENT = """<!DOCTYPE html>
   .step-text .amt{font-size:13.5px;font-weight:700;}
   .step-text .date{font-size:11px;color:var(--muted);}
 
-  .action-row{display:flex;gap:10px;}
+  .action-row{display:flex;gap:10px; flex-wrap: wrap;}
   .btn{
     border-radius:9px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;border:1px solid var(--border);
     display:flex;align-items:center;justify-content:center;gap:8px;transition:all 0.15s ease;
   }
-  .btn-dark{background:var(--indigo-dark);color:#fff;border:none;flex:1;}
+  .btn-dark{background:var(--indigo-dark);color:#fff;border:none;flex:1; min-width: 140px;}
   .btn-dark:hover{background:#15122e;}
-  .btn-light{background:#fff;color:#333;flex:1;}
+  .btn-light{background:#fff;color:#333;flex:1; min-width: 140px;}
   .btn-light:hover{background:#f8f8fc;}
 
   /* Right column */
@@ -712,6 +753,7 @@ HTML_CONTENT = """<!DOCTYPE html>
   .modal-overlay.active{opacity:1;pointer-events:auto;}
   .modal-box{
     background:#fff;border-radius:14px;width:90%;max-width:500px;padding:24px;box-shadow:0 10px 25px rgba(0,0,0,0.15);
+    max-height: 90vh; overflow-y: auto;
   }
   .modal-box h3{margin:0 0 16px;font-size:17px;}
   .form-group{margin-bottom:14px;}
@@ -721,24 +763,57 @@ HTML_CONTENT = """<!DOCTYPE html>
   .tab-pane{display:none;}
   .tab-pane.active{display:block;}
 
-  .table-container{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:14px;}
-  table.data-table{width:100%;border-collapse:collapse;background:#fff;text-align:left;}
+  .table-container{overflow-x:auto;border:1px solid var(--border);border-radius:12px;margin-top:14px; -webkit-overflow-scrolling: touch;}
+  table.data-table{width:100%;border-collapse:collapse;background:#fff;text-align:left; min-width: 500px;}
   table.data-table th{background:#f9f9fc;padding:10px 14px;font-size:12px;font-weight:600;color:var(--muted);border-bottom:1px solid var(--border);}
   table.data-table td{padding:12px 14px;font-size:13px;border-bottom:1px solid var(--border);}
   table.data-table tr:hover td{background:#f4f5f9;cursor:pointer;}
 
+  /* --- RESPONSIVE MEDIA QUERIES --- */
+  @media (max-width:1100px){
+    .finance-row{grid-template-columns:repeat(2,1fr);}
+  }
+
   @media (max-width:980px){
+    .mobile-header { display: flex; }
     .grid{grid-template-columns:1fr;}
-    .sidebar{display:none;}
-    .finance-row{grid-template-columns:1fr 1fr;}
+    .sidebar {
+      position: fixed; top: 0; left: 0; height: 100vh; z-index: 300;
+      transform: translateX(-100%); box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .main { padding: 16px; }
+  }
+
+  @media (max-width:640px){
+    .finance-row{grid-template-columns:1fr;}
+    .stat-grid{grid-template-columns:1fr;}
+    .plan-steps{flex-direction:column; gap:10px;}
+    .action-row{flex-direction:column;}
+    .input-row{padding:8px;}
+    .analyze-btn{width:100%; justify-content:center;}
+    .topbar { flex-direction: column; align-items: flex-start; }
+    .quote-card { max-width: 100%; width: 100%; }
   }
 </style>
 </head>
 <body>
+
+<div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar(false)"></div>
+
+<!-- Mobile Header Bar -->
+<div class="mobile-header">
+  <div class="mobile-brand">
+    <div class="ico">◆</div>
+    <span>Buy or Wait?</span>
+  </div>
+  <button class="menu-toggle" onclick="toggleSidebar(true)">☰</button>
+</div>
+
 <div class="frame">
 
-  <!-- Sidebar -->
-  <div class="sidebar">
+  <!-- Sidebar Drawer -->
+  <div class="sidebar" id="sidebar">
     <div class="brand">
       <div class="brand-icon">◆</div>
       <div class="brand-text">
@@ -1066,6 +1141,18 @@ document.addEventListener("DOMContentLoaded", () => {
   fetchBootstrap();
 });
 
+function toggleSidebar(open) {
+  const sb = document.getElementById("sidebar");
+  const bd = document.getElementById("sidebar-backdrop");
+  if (open) {
+    sb.classList.add("open");
+    bd.classList.add("active");
+  } else {
+    sb.classList.remove("open");
+    bd.classList.remove("active");
+  }
+}
+
 async function fetchBootstrap() {
   try {
     const res = await fetch("/api/bootstrap");
@@ -1081,6 +1168,7 @@ async function fetchBootstrap() {
 }
 
 function switchNav(paneId) {
+  toggleSidebar(false);
   document.querySelectorAll(".nav-item").forEach(el => el.classList.remove("active"));
   document.querySelectorAll(".tab-pane").forEach(el => el.classList.remove("active"));
 
